@@ -1,0 +1,35 @@
+spcd,common_name,genus,species,family,softwood_hardwood
+110,shortleaf pine,Pinus,echinata,Pinaceae,S
+111,slash pine,Pinus,elliottii,Pinaceae,S
+121,longleaf pine,Pinus,palustris,Pinaceae,S
+128,pond pine,Pinus,serotina,Pinaceae,S
+129,eastern white pine,Pinus,strobus,Pinaceae,S
+131,loblolly pine,Pinus,taeda,Pinaceae,S
+132,Virginia pine,Pinus,virginiana,Pinaceae,S
+221,baldcypress,Taxodium,distichum,Cupressaceae,S
+261,eastern hemlock,Tsuga,canadensis,Pinaceae,S
+316,red maple,Acer,rubrum,Sapindaceae,H
+318,sugar maple,Acer,saccharum,Sapindaceae,H
+371,yellow birch,Betula,alleghaniensis,Betulaceae,H
+375,paper birch,Betula,papyrifera,Betulaceae,H
+391,hickory spp.,Carya,spp.,Juglandaceae,H
+407,mockernut hickory,Carya,tomentosa,Juglandaceae,H
+409,pignut hickory,Carya,glabra,Juglandaceae,H
+531,American beech,Fagus,grandifolia,Fagaceae,H
+541,white ash,Fagus,americana,Oleaceae,H
+544,green ash,Fraxinus,pennsylvanica,Oleaceae,H
+601,sassafras,Sassafras,albidum,Lauraceae,H
+611,sweetgum,Liquidambar,styraciflua,Altingiaceae,H
+621,yellow-poplar,Liriodendron,tulipifera,Magnoliaceae,H
+693,black cherry,Prunus,serotina,Rosaceae,H
+746,quaking aspen,Populus,tremuloides,Salicaceae,H
+762,black walnut,Juglans,nigra,Juglandaceae,H
+802,white oak,Quercus,alba,Fagaceae,H
+812,chestnut oak,Quercus,montana,Fagaceae,H
+820,southern red oak,Quercus,falcata,Fagaceae,H
+827,water oak,Quercus,nigra,Fagaceae,H
+833,northern red oak,Quercus,rubra,Fagaceae,H
+835,post oak,Quercus,stellata,Fagaceae,H
+837,scarlet oak,Quercus,coccinea,Fagaceae,H
+951,American elm,Ulmus,americana,Ulmaceae,H
+972,eastern cottonwood,Populus,deltoides,Salicaceae,H

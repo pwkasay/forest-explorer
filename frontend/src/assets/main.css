@@ -1,0 +1,250 @@
+:root {
+  --color-bg: #0f1117;
+  --color-surface: #1a1d27;
+  --color-surface-hover: #242836;
+  --color-border: #2e3347;
+  --color-text: #e4e7ef;
+  --color-text-muted: #8b90a0;
+  --color-accent: #4ade80;
+  --color-accent-dim: #22c55e;
+  --color-carbon-high: #16a34a;
+  --color-carbon-med: #eab308;
+  --color-carbon-low: #ef4444;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+  --radius: 8px;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+/* Layout */
+.app-shell { display: flex; flex-direction: column; min-height: 100vh; }
+.app-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+.app-header h1 { font-size: 1.1rem; font-weight: 600; }
+.app-header h1 span { color: var(--color-accent); }
+.app-main { flex: 1; display: flex; flex-direction: column; }
+
+/* Navigation */
+.nav-links { display: flex; gap: 0.25rem; }
+.nav-links a {
+  padding: 0.4rem 0.75rem; border-radius: var(--radius);
+  color: var(--color-text-muted); text-decoration: none; font-size: 0.85rem;
+  transition: all 0.15s;
+}
+.nav-links a:hover { color: var(--color-text); background: var(--color-surface-hover); }
+.nav-links a.router-link-active {
+  color: var(--color-accent); background: rgba(74, 222, 128, 0.1);
+}
+
+/* Cards */
+.card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius); padding: 1.25rem;
+}
+.card-header { font-size: 0.8rem; color: var(--color-text-muted); text-transform: uppercase;
+  letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+.card-value { font-size: 1.8rem; font-weight: 700; font-family: var(--font-mono); }
+.card-value.accent { color: var(--color-accent); }
+
+/* Stats grid */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+
+/* Dashboard layout */
+.dashboard { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+.dashboard-row { display: grid; gap: 1.5rem; }
+.dashboard-row.two-col { grid-template-columns: 1fr 1fr; }
+.dashboard-row.map-row { grid-template-columns: 2fr 1fr; min-height: 500px; }
+
+/* State selector */
+.state-selector {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+.state-selector select {
+  background: var(--color-surface); color: var(--color-text);
+  border: 1px solid var(--color-border); border-radius: var(--radius);
+  padding: 0.5rem 0.75rem; font-size: 0.9rem;
+}
+.state-selector label { color: var(--color-text-muted); font-size: 0.85rem; }
+
+/* QA badges */
+.badge {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600;
+}
+.badge.error { background: rgba(239, 68, 68, 0.15); color: var(--color-error); }
+.badge.warning { background: rgba(245, 158, 11, 0.15); color: var(--color-warning); }
+.badge.info { background: rgba(59, 130, 246, 0.15); color: var(--color-info); }
+.badge.ok { background: rgba(74, 222, 128, 0.15); color: var(--color-accent); }
+
+/* Map container */
+.map-container { border-radius: var(--radius); overflow: hidden; min-height: 400px; }
+
+/* Loading */
+.loading { display: flex; align-items: center; justify-content: center;
+  min-height: 200px; color: var(--color-text-muted); }
+
+/* ── Map Controls ─────────────────────────────────────────────────────── */
+
+.map-wrapper {
+  position: relative; width: 100%; height: calc(100vh - 52px);
+}
+
+.map-filter-panel {
+  position: absolute; top: 12px; left: 12px; z-index: 1000;
+  background: rgba(26, 29, 39, 0.92); backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border); border-radius: var(--radius);
+  padding: 1rem; width: 240px;
+  display: flex; flex-direction: column; gap: 0.75rem;
+}
+.map-filter-panel .filter-label {
+  font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase;
+  letter-spacing: 0.04em; margin-bottom: 0.2rem;
+}
+.map-filter-panel select {
+  width: 100%; background: var(--color-bg); color: var(--color-text);
+  border: 1px solid var(--color-border); border-radius: var(--radius);
+  padding: 0.4rem 0.5rem; font-size: 0.85rem;
+}
+.map-filter-panel .filter-value {
+  font-size: 0.85rem; font-family: var(--font-mono); color: var(--color-accent);
+}
+.map-filter-panel .plot-count {
+  font-size: 0.8rem; color: var(--color-text-muted);
+  padding-top: 0.25rem; border-top: 1px solid var(--color-border);
+}
+.map-filter-panel .plot-count strong { color: var(--color-accent); }
+
+/* Carbon slider */
+.carbon-slider {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 4px;
+  background: var(--color-border); border-radius: 2px; outline: none;
+}
+.carbon-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--color-accent); cursor: pointer;
+  border: 2px solid var(--color-bg);
+}
+.carbon-slider::-moz-range-thumb {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--color-accent); cursor: pointer;
+  border: 2px solid var(--color-bg);
+}
+
+.clear-filters-btn {
+  background: none; border: 1px solid var(--color-border); border-radius: var(--radius);
+  color: var(--color-text-muted); padding: 0.3rem 0.5rem; font-size: 0.8rem;
+  cursor: pointer; transition: all 0.15s;
+}
+.clear-filters-btn:hover {
+  color: var(--color-text); border-color: var(--color-text-muted);
+}
+
+/* Layer toggle */
+.map-layer-toggle {
+  position: absolute; top: 12px; right: 12px; z-index: 1000;
+  display: flex; gap: 0; border-radius: var(--radius); overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+.map-layer-toggle button {
+  background: rgba(26, 29, 39, 0.92); backdrop-filter: blur(12px);
+  color: var(--color-text-muted); border: none;
+  padding: 0.5rem 0.75rem; font-size: 0.8rem; cursor: pointer;
+  transition: all 0.15s;
+}
+.map-layer-toggle button:not(:last-child) {
+  border-right: 1px solid var(--color-border);
+}
+.map-layer-toggle button.active {
+  color: var(--color-accent); background: rgba(74, 222, 128, 0.1);
+}
+
+/* Floating legend */
+.map-legend {
+  position: absolute; bottom: 24px; right: 12px; z-index: 1000;
+  background: rgba(26, 29, 39, 0.92); backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border); border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+}
+.map-legend .legend-title {
+  font-size: 0.7rem; color: var(--color-text-muted); text-transform: uppercase;
+  letter-spacing: 0.04em; margin-bottom: 0.4rem;
+}
+.map-legend .legend-item {
+  display: flex; align-items: center; gap: 0.4rem; padding: 0.15rem 0;
+}
+.map-legend .legend-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.map-legend .legend-label {
+  font-size: 0.8rem; color: var(--color-text-muted);
+}
+
+/* Loading overlay */
+.map-loading-overlay {
+  position: absolute; inset: 0; z-index: 999;
+  background: rgba(15, 17, 23, 0.6); backdrop-filter: blur(2px);
+  display: flex; align-items: center; justify-content: center;
+}
+.map-spinner {
+  width: 32px; height: 32px; border: 3px solid var(--color-border);
+  border-top-color: var(--color-accent); border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Dark popup override */
+.leaflet-popup-content-wrapper {
+  background: var(--color-surface) !important;
+  color: var(--color-text) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+.leaflet-popup-tip {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: none !important;
+}
+.leaflet-popup-close-button {
+  color: var(--color-text-muted) !important;
+}
+.leaflet-popup-close-button:hover {
+  color: var(--color-text) !important;
+}
+
+/* Dark cluster icons — color driven by average carbon density (inline style) */
+.marker-cluster {
+  background: rgba(26, 29, 39, 0.85) !important;
+  border: 2px solid var(--color-border) !important;
+  border-radius: 50% !important;
+}
+.marker-cluster div {
+  width: 30px !important; height: 30px !important; margin: 5px !important;
+  border-radius: 50% !important;
+  font-size: 12px !important; font-weight: 700 !important;
+  color: var(--color-bg) !important;
+  display: flex !important; align-items: center !important; justify-content: center !important;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .dashboard-row.two-col, .dashboard-row.map-row { grid-template-columns: 1fr; }
+  .map-filter-panel { width: 200px; padding: 0.75rem; }
+  .map-legend { bottom: 12px; }
+}

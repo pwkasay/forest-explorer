@@ -1,0 +1,51 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: forest_explorer
+      POSTGRES_USER: ${POSTGRES_USER:-forest}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-forest_dev}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U forest -d forest_explorer"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-forest}:${POSTGRES_PASSWORD:-forest_dev}@db:5432/forest_explorer
+      DATABASE_URL_SYNC: postgresql://${POSTGRES_USER:-forest}:${POSTGRES_PASSWORD:-forest_dev}@db:5432/forest_explorer
+      FIA_BASE_URL: https://apps.fs.usda.gov/fiadb-api
+      FIA_DATAMART_URL: https://apps.fs.usda.gov/fia/datamart/CSV
+    ports:
+      - "8002:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    command: bash -c "dbt deps --project-dir /app/dbt && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    command: npm run dev -- --host 0.0.0.0 --port 3000
+
+volumes:
+  pgdata:

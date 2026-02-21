@@ -1,0 +1,12 @@
+forest_carbon:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('PGHOST', 'localhost') }}"
+      port: 5432
+      user: "{{ env_var('POSTGRES_USER', 'forest') }}"
+      pass: "{{ env_var('POSTGRES_PASSWORD', 'forest_dev') }}"
+      dbname: forest_explorer
+      schema: public
+      threads: 4

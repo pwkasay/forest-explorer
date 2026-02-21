@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: mart_carbon_by_species
+    description: >
+      Carbon storage metrics aggregated by tree species and state.
+      Powers the species comparison bar charts in the dashboard.
+    columns:
+      - name: species_code
+        tests: [not_null]
+      - name: avg_carbon_per_acre_tons
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+  - name: mart_plot_carbon_density
+    description: >
+      Plot-level carbon density with spatial coordinates for map visualization.
+      Each row is one FIA plot with aggregated carbon, structure, and ownership data.
+    columns:
+      - name: plot_cn
+        tests: [unique, not_null]
+      - name: carbon_density_class
+        tests:
+          - accepted_values:
+              values: ['very_high', 'high', 'medium', 'low', 'very_low']

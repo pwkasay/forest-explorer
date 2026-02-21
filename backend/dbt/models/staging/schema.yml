@@ -1,0 +1,54 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    description: "Raw FIA data ingested from USFS DataMart"
+    tables:
+      - name: fia_plot
+        description: "Plot locations with PostGIS geometry"
+        columns:
+          - name: cn
+            description: "Primary key (sequence number)"
+            tests: [unique, not_null]
+          - name: statecd
+            tests: [not_null]
+      - name: fia_tree
+        description: "Individual tree measurements with carbon estimates"
+        columns:
+          - name: cn
+            tests: [unique, not_null]
+      - name: fia_cond
+        description: "Stand-level condition data per plot"
+        columns:
+          - name: cn
+            tests: [unique, not_null]
+
+models:
+  - name: stg_fia_plots
+    description: "Cleaned FIA plots with validated coordinates and FIPS codes"
+    columns:
+      - name: plot_cn
+        tests: [unique, not_null]
+      - name: coord_quality
+        tests:
+          - accepted_values:
+              values: ['valid', 'missing_coords', 'out_of_bounds']
+
+  - name: stg_fia_trees
+    description: "Normalized FIA tree data with metric conversions and per-acre carbon"
+    columns:
+      - name: tree_cn
+        tests: [unique, not_null]
+      - name: carbon_ag_lbs
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+              config:
+                severity: warn
+
+  - name: stg_fia_conditions
+    description: "Stand-level conditions with ownership and maturity classifications"
+    columns:
+      - name: condition_cn
+        tests: [unique, not_null]
