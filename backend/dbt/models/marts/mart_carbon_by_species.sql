@@ -37,7 +37,7 @@ species_carbon as (
         -- Biomass
         avg(t.biomass_ag_lbs * t.trees_per_acre) as avg_biomass_per_acre_lbs,
 
-        -- Loblolly flag for Funga-relevant filtering
+        -- Loblolly flag for species-relevant filtering
         bool_or(t.is_loblolly_pine) as includes_loblolly
 
     from trees t

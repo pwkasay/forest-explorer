@@ -14,7 +14,7 @@ export const useCarbonStore = defineStore('carbon', () => {
   const loading = ref(false)
   const error = ref(null)
 
-  // SE US states relevant to Funga's operations
+  // SE US states relevant to SE US forestry operations
   const availableStates = [
     { code: 1, abbr: 'AL', name: 'Alabama' },
     { code: 12, abbr: 'FL', name: 'Florida' },
@@ -76,7 +76,7 @@ export const useCarbonStore = defineStore('carbon', () => {
   async function runQA() {
     loading.value = true
     try {
-      qaResults.value = await api.post('/qa/run')
+      qaResults.value = await api.post(`/qa/run?statecd=${selectedState.value}`)
     } catch (e) {
       error.value = e.message
     } finally {

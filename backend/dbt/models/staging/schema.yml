@@ -23,6 +23,16 @@ sources:
         columns:
           - name: cn
             tests: [unique, not_null]
+      - name: county_boundaries
+        description: "Census TIGER/Line county boundary polygons"
+        columns:
+          - name: geoid
+            tests: [unique, not_null]
+      - name: prism_normals
+        description: "PRISM 30-year climate normals sampled at FIA plot locations"
+        columns:
+          - name: plot_cn
+            tests: [unique, not_null]
 
 models:
   - name: stg_fia_plots
@@ -51,4 +61,16 @@ models:
     description: "Stand-level conditions with ownership and maturity classifications"
     columns:
       - name: condition_cn
+        tests: [unique, not_null]
+
+  - name: stg_county_boundaries
+    description: "Census TIGER county boundaries with area in acres"
+    columns:
+      - name: county_fips
+        tests: [unique, not_null]
+
+  - name: stg_prism_normals
+    description: "PRISM 30-year climate normals with unit conversions"
+    columns:
+      - name: plot_cn
         tests: [unique, not_null]

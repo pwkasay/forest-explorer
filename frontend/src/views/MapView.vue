@@ -46,7 +46,8 @@ const carbonSliderLabel = computed(() =>
 
 // ── Map init ────────────────────────────────────────────────────────────
 async function initMap() {
-  L = await import('leaflet')
+  const leaflet = await import('leaflet')
+  L = leaflet.default || leaflet
   window.L = L
   await import('leaflet.markercluster')
   await import('leaflet.heat')

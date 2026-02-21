@@ -1,7 +1,7 @@
 """Carbon metrics service — queries PostGIS for spatial carbon data.
 
 These queries serve the dashboard and mirror the kind of aggregations
-a Funga Data Engineer would build for Growth and Land team visibility.
+a data engineer would build for team visibility.
 """
 
 from sqlalchemy import text
@@ -199,10 +199,11 @@ async def _get_species_names(db: AsyncSession) -> dict[int, str]:
     except Exception:
         # Seed table may not exist yet — return common SE US species
         return {
-            131: "loblolly pine",
-            132: "longleaf pine",
             110: "shortleaf pine",
+            121: "longleaf pine",
             129: "eastern white pine",
+            131: "loblolly pine",
+            132: "Virginia pine",
             261: "eastern hemlock",
             316: "red maple",
             318: "sugar maple",

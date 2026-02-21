@@ -47,8 +47,8 @@ Built as a portfolio project demonstrating data engineering skills for climate t
 
 ```bash
 # Clone and start everything
-git clone https://github.com/YOUR_USERNAME/forest-carbon-explorer.git
-cd forest-carbon-explorer
+git clone https://github.com/pwkasay/forest-explorer.git
+cd forest-explorer
 cp .env.example .env
 
 # Start the stack
@@ -132,6 +132,7 @@ This project works with **Forest Inventory & Analysis (FIA)** data from the USDA
 - `TPA_UNADJ` — Trees-per-acre expansion factor
 - `FORTYPCD` — Forest type code
 - `STDAGE` — Stand age (years)
+- **Coordinate fuzzing** — Public FIA plot coordinates are displaced ~0.5–1 mile by USFS for privacy; carbon estimates remain precise but mapped locations are approximate
 
 The dbt models transform these raw measurements into carbon-per-acre estimates by species, forest type, and geography
 

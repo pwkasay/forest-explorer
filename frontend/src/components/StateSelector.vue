@@ -17,7 +17,7 @@ const store = useCarbonStore()
       </option>
     </select>
     <span style="font-size: 0.8rem; color: var(--color-text-muted)">
-      SE US states — Funga's primary operational region
+      SE US states — primary operational region for SE US forestry
     </span>
   </div>
 </template>

@@ -1,6 +1,9 @@
 """API routes for forest carbon data, spatial queries, and QA/QC."""
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+import logging
+
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -12,6 +15,8 @@ from app.schemas.carbon import (
     QARunSummary,
 )
 from app.services import carbon, qa_engine
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -25,10 +30,7 @@ async def carbon_summary(statecd: int, db: AsyncSession = Depends(get_db)) -> Ca
 
     State codes follow FIPS: NC=37, SC=45, GA=13, VA=51, AL=1, etc.
     """
-    try:
-        return await carbon.get_carbon_summary(db, statecd)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+    return await carbon.get_carbon_summary(db, statecd)
 
 
 @router.get("/carbon/species/{statecd}", response_model=list[CarbonBySpecies])
@@ -62,18 +64,112 @@ async def plots_geojson(
     )
 
 
+# ── County Boundaries ──────────────────────────────────────────────────────
+
+
+@router.get("/counties/{statecd}/geojson")
+async def county_boundaries(
+    statecd: int,
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Return county boundaries as a GeoJSON FeatureCollection for a state.
+
+    Uses Census TIGER/Line polygons loaded by the tiger_loader ingestion pipeline.
+    """
+    result = await db.execute(
+        text("""
+            SELECT
+                geoid,
+                name,
+                statecd,
+                countycd,
+                aland,
+                awater,
+                ST_AsGeoJSON(geom)::json AS geometry
+            FROM raw.county_boundaries
+            WHERE statecd = :statecd
+            ORDER BY name
+        """),
+        {"statecd": statecd},
+    )
+    rows = result.all()
+    features = [
+        {
+            "type": "Feature",
+            "geometry": r.geometry,
+            "properties": {
+                "geoid": r.geoid,
+                "name": r.name,
+                "statecd": r.statecd,
+                "countycd": r.countycd,
+                "aland_sqm": r.aland,
+                "awater_sqm": r.awater,
+            },
+        }
+        for r in rows
+    ]
+    return {"type": "FeatureCollection", "features": features}
+
+
+# ── Climate Data ───────────────────────────────────────────────────────────
+
+
+@router.get("/climate/{statecd}")
+async def climate_data(
+    statecd: int,
+    db: AsyncSession = Depends(get_db),
+) -> list[dict]:
+    """Return PRISM climate normals joined to plot-level carbon metrics.
+
+    Enables correlation analysis between temperature/precipitation patterns
+    and forest carbon density.
+    """
+    result = await db.execute(
+        text("""
+            SELECT
+                p.cn AS plot_cn,
+                p.lat,
+                p.lon,
+                p.invyr,
+                c.annual_tmean_f,
+                c.annual_ppt_in,
+                c.jan_tmean_f,
+                c.jul_tmean_f,
+                c.growing_season_ppt_in,
+                COALESCE(SUM(t.carbon_ag * t.tpa_unadj) / 2000.0, 0) AS carbon_ag_tons,
+                COUNT(t.cn) AS tree_count
+            FROM raw.fia_plot p
+            JOIN raw.prism_normals c ON c.plot_cn = p.cn
+            LEFT JOIN raw.fia_tree t ON t.plt_cn = p.cn AND t.statuscd = 1
+            WHERE p.statecd = :statecd
+            GROUP BY p.cn, p.lat, p.lon, p.invyr,
+                     c.annual_tmean_f, c.annual_ppt_in,
+                     c.jan_tmean_f, c.jul_tmean_f, c.growing_season_ppt_in
+            ORDER BY carbon_ag_tons DESC
+            LIMIT 1000
+        """),
+        {"statecd": statecd},
+    )
+    return [dict(r._mapping) for r in result.all()]
+
+
 # ── QA/QC ───────────────────────────────────────────────────────────────────
 
 
 @router.post("/qa/run", response_model=QARunSummary)
-async def run_qa_checks(db: AsyncSession = Depends(get_db)) -> QARunSummary:
+async def run_qa_checks(
+    statecd: int | None = Query(default=None, description="Filter by state FIPS code"),
+    db: AsyncSession = Depends(get_db),
+) -> QARunSummary:
     """Execute all QA/QC validation checks on ingested data.
 
     Returns a summary with per-check results, severity levels, and failure rates.
-    This mimics the automated validation pipelines described in the Funga JD:
+    This mimics automated validation pipelines,
     catching inconsistencies before data reaches downstream dbt models.
+
+    Optionally filter by state FIPS code (e.g., NC=37, SC=45).
     """
-    return await qa_engine.run_all_checks(db)
+    return await qa_engine.run_all_checks(db, statecd=statecd)
 
 
 # ── Ingestion (async trigger) ──────────────────────────────────────────────

@@ -1,7 +1,7 @@
 # Forest Carbon Data Explorer — Claude Code Instructions
 
 ## Context
-This is a portfolio project for a Data Engineer application at Funga PBC, a climate tech startup using fungal microbiome restoration for forest carbon sequestration. The project demonstrates: FIA data ingestion, dbt transformations, geospatial QA/QC, and a Vue dashboard — mirroring Funga's actual stack (PostgreSQL/PostGIS, dbt, Python, Docker).
+This is a portfolio project demonstrating data engineering skills for climate tech — a data stack that bridges geospatial analysis, forest inventory data, and carbon accounting. The project demonstrates: FIA data ingestion, dbt transformations, geospatial QA/QC, and a Vue dashboard — mirroring a production climate tech stack (PostgreSQL/PostGIS, dbt, Python, Docker).
 
 ## Architecture Decisions
 - **Python 3.14** with FastAPI (async throughout, type hints everywhere)
@@ -9,7 +9,7 @@ This is a portfolio project for a Data Engineer application at Funga PBC, a clim
 - **dbt-core** with dbt-postgres adapter (not dbt Cloud)
 - **PostGIS** for all spatial data (not just plain PostgreSQL)
 - **Docker Compose** for local dev; production-ready Dockerfiles
-- No heavy managed platforms (no Snowflake, no Databricks) — Funga explicitly values lean, composable tools
+- No heavy managed platforms (no Snowflake, no Databricks) — This project values lean, composable tools
 
 ## Code Standards
 - Python: Ruff for linting, strict type hints, async where possible

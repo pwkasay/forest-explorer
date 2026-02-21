@@ -76,6 +76,32 @@ CREATE INDEX idx_fia_tree_plt ON raw.fia_tree (plt_cn);
 CREATE INDEX idx_fia_tree_spcd ON raw.fia_tree (spcd);
 CREATE INDEX idx_fia_tree_dia ON raw.fia_tree (dia);
 
+-- Census TIGER county boundaries
+CREATE TABLE IF NOT EXISTS raw.county_boundaries (
+    geoid       VARCHAR(5) PRIMARY KEY,  -- 5-digit FIPS (state + county)
+    name        VARCHAR(100) NOT NULL,
+    statecd     INTEGER NOT NULL,
+    countycd    INTEGER NOT NULL,
+    aland       BIGINT,                  -- land area (sq meters)
+    awater      BIGINT,                  -- water area (sq meters)
+    geom        GEOMETRY(MultiPolygon, 4326),
+    ingested_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_county_boundaries_statecd ON raw.county_boundaries(statecd);
+CREATE INDEX IF NOT EXISTS idx_county_boundaries_geom ON raw.county_boundaries USING GIST(geom);
+
+-- PRISM 30-year climate normals sampled at FIA plot locations
+CREATE TABLE IF NOT EXISTS raw.prism_normals (
+    plot_cn             BIGINT PRIMARY KEY REFERENCES raw.fia_plot(cn),
+    annual_tmean_f      DOUBLE PRECISION,  -- mean annual temp (F)
+    annual_ppt_in       DOUBLE PRECISION,  -- mean annual precip (inches)
+    jan_tmean_f         DOUBLE PRECISION,
+    jul_tmean_f         DOUBLE PRECISION,
+    growing_season_ppt_in DOUBLE PRECISION,  -- Apr-Sep precip
+    ingested_at         TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- QA/QC results table
 CREATE TABLE qa.validation_results (
     id SERIAL PRIMARY KEY,

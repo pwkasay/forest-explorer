@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useCarbonStore } from '@/stores/carbon'
+import StateSelector from '@/components/StateSelector.vue'
 
 const store = useCarbonStore()
 
@@ -22,16 +23,19 @@ function formatPct(rate) {
   <div class="dashboard">
     <div style="display: flex; align-items: center; justify-content: space-between">
       <h2 style="font-size: 1.1rem">Data Quality Validation</h2>
-      <button
-        @click="store.runQA()"
-        :disabled="store.loading"
-        style="padding: 0.5rem 1rem; background: var(--color-accent); color: var(--color-bg);
-               border: none; border-radius: var(--radius); cursor: pointer; font-weight: 600;
-               font-size: 0.85rem; opacity: 1; transition: opacity 0.15s"
-        :style="{ opacity: store.loading ? 0.5 : 1 }"
-      >
-        {{ store.loading ? 'Running...' : 'Run QA Checks' }}
-      </button>
+      <div style="display: flex; align-items: center; gap: 1rem">
+        <StateSelector />
+        <button
+          @click="store.runQA()"
+          :disabled="store.loading"
+          style="padding: 0.5rem 1rem; background: var(--color-accent); color: var(--color-bg);
+                 border: none; border-radius: var(--radius); cursor: pointer; font-weight: 600;
+                 font-size: 0.85rem; opacity: 1; transition: opacity 0.15s"
+          :style="{ opacity: store.loading ? 0.5 : 1 }"
+        >
+          {{ store.loading ? 'Running...' : 'Run QA Checks' }}
+        </button>
+      </div>
     </div>
 
     <div v-if="store.loading" class="loading">Running validation checks...</div>

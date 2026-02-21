@@ -50,7 +50,7 @@ cleaned as (
             else 'unknown'
         end as tree_status,
 
-        -- Is this loblolly pine? (Funga's primary species)
+        -- Is this loblolly pine? (a primary commercial species)
         (spcd = 131) as is_loblolly_pine,
 
         ingested_at

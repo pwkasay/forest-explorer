@@ -21,7 +21,7 @@ cleaned as (
         owngrpcd as ownership_group_code,
         condprop_unadj as condition_proportion,
 
-        -- Ownership categories (important for Funga's land partner model)
+        -- Ownership categories (important for land partner models)
         case owngrpcd
             when 10 then 'National Forest'
             when 20 then 'Other Federal'

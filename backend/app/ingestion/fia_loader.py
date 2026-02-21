@@ -4,13 +4,15 @@ Downloads state-level CSV files from the USFS FIA DataMart and loads them
 into PostgreSQL with PostGIS geometry. Uses chunked reads to keep memory
 bounded — NC_TREE.csv alone is ~150MB with 600K+ rows.
 
+Note: Public FIA coordinates are displaced ~0.5-1 mile by USFS for privacy.
+The geometry column built from lat/lon reflects these fuzzed positions.
+
 Usage:
     python -m app.ingestion.fia_loader --state NC
     python -m app.ingestion.fia_loader --state NC --tables PLOT,TREE,COND
 """
 
 import argparse
-import io
 import logging
 import tempfile
 import time
@@ -132,9 +134,6 @@ TREE_COLS = [
     "VOLCFNET",
 ]
 
-# Table config: FIA name -> (pg table, clean fn, column list, needs geometry)
-_TABLE_CONFIG: dict[str, tuple[str, Callable[[pd.DataFrame], pd.DataFrame], list[str], bool]] = {}
-
 # FK-safe ordering: dependents deleted first, parents loaded first
 _DELETE_ORDER = ["fia_tree", "fia_cond", "fia_plot"]
 
@@ -163,7 +162,7 @@ def download_fia_csv(state_abbr: str, table_name: str) -> Path:
             # ZIP fallback
             url = f"{base_url}/{state_abbr}_{table_name}.zip"
             logger.info(f"CSV not found, trying {url}")
-            zip_tmp = tempfile.NamedTemporaryFile(suffix=".zip", delete=False)
+            zip_tmp = tempfile.NamedTemporaryFile(suffix=".zip", delete=False)  # noqa: SIM115
             try:
                 with client.stream("GET", url) as resp:
                     resp.raise_for_status()
@@ -171,7 +170,7 @@ def download_fia_csv(state_abbr: str, table_name: str) -> Path:
                         zip_tmp.write(chunk)
                 zip_tmp.close()
 
-                csv_tmp = tempfile.NamedTemporaryFile(suffix=".csv", delete=False)
+                csv_tmp = tempfile.NamedTemporaryFile(suffix=".csv", delete=False)  # noqa: SIM115
                 with zipfile.ZipFile(zip_tmp.name) as zf:
                     csv_name = zf.namelist()[0]
                     with zf.open(csv_name) as src:
@@ -182,7 +181,7 @@ def download_fia_csv(state_abbr: str, table_name: str) -> Path:
             finally:
                 Path(zip_tmp.name).unlink(missing_ok=True)
         else:
-            tmp = tempfile.NamedTemporaryFile(suffix=".csv", delete=False)
+            tmp = tempfile.NamedTemporaryFile(suffix=".csv", delete=False)  # noqa: SIM115
             with client.stream("GET", url) as resp:
                 resp.raise_for_status()
                 downloaded = 0
@@ -235,7 +234,11 @@ def delete_state_data(
 def update_plot_geometry(
     engine: Engine, table_name: str = "fia_plot", schema: str = "raw"
 ) -> None:
-    """Build PostGIS geometry from lat/lon. Called once after all plot chunks are loaded."""
+    """Build PostGIS geometry from lat/lon. Called once after all plot chunks are loaded.
+
+    Note: FIA coordinates are fuzzed ~0.5-1 mile by USFS for privacy —
+    geometry reflects approximate, not exact, plot locations.
+    """
     with engine.begin() as conn:
         result = conn.execute(
             text(f"""

@@ -64,8 +64,8 @@ watch(() => store.selectedState, () => store.loadAll())
           <p style="color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.7; margin-top: 0.75rem">
             Carbon values use the <strong>National Scale Volume and Biomass (NSVB)</strong>
             estimators adopted in 2023. Loblolly pine (SPCD 131) is highlighted because it's
-            the dominant commercial timber species in the SE US — and Funga's primary
-            inoculation target.
+            the dominant commercial timber species in the SE US — and a primary commercial
+            species for carbon sequestration projects.
           </p>
         </div>
       </div>
