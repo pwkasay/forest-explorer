@@ -2,7 +2,7 @@
 
 **A full-stack data engineering demo ingesting USFS Forest Inventory & Analysis data through automated QA/QC pipelines, transforming it with dbt, and serving it via a Vue dashboard with interactive geospatial carbon visualizations.**
 
-Built as a portfolio project demonstrating data engineering skills for climate tech — specifically the Data Engineer role at Funga, where the job is to own the "last mile" of a data stack that bridges genomic sequencing, geospatial analysis, and carbon accounting.
+Built as a portfolio project demonstrating data engineering skills for climate tech — a data stack that bridges genomic sequencing, geospatial analysis, and carbon accounting.
 
 ## Architecture
 
@@ -24,7 +24,7 @@ Built as a portfolio project demonstrating data engineering skills for climate t
 
 ## What This Demonstrates
 
-| Funga JD Requirement | How This Project Shows It |
+| Requirement | How This Project Shows It |
 |---|---|
 | SQL + dbt transformation layers | dbt models transforming raw FIA data into carbon-ready marts |
 | Internal data apps (Streamlit or similar) | Vue dashboard with carbon metrics, maps, QA/QC visibility |
@@ -133,7 +133,7 @@ This project works with **Forest Inventory & Analysis (FIA)** data from the USDA
 - `FORTYPCD` — Forest type code
 - `STDAGE` — Stand age (years)
 
-The dbt models transform these raw measurements into carbon-per-acre estimates by species, forest type, and geography — the kind of aggregation Funga's Growth and Land teams would need.
+The dbt models transform these raw measurements into carbon-per-acre estimates by species, forest type, and geography
 
 ## License
 
