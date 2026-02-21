@@ -14,7 +14,11 @@ class Settings(BaseSettings):
     # API
     api_title: str = "Forest Carbon Explorer"
     api_version: str = "0.1.0"
-    cors_origins: list[str] = ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173"]
+    cors_origins: list[str] = [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:5173",
+    ]
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

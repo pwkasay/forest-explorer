@@ -23,7 +23,7 @@ const chartData = computed(() => ({
     {
       label: 'Below-ground',
       data: props.data.map(d => d.avg_carbon_bg_per_acre),
-      backgroundColor: '#16a34a',
+      backgroundColor: '#f59e0b',
       borderRadius: 3,
     },
   ],

@@ -4,6 +4,8 @@ These queries serve the dashboard and mirror the kind of aggregations
 a data engineer would build for team visibility.
 """
 
+import logging
+
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,6 +16,30 @@ from app.schemas.carbon import (
     PlotFeatureCollection,
     PlotProperties,
 )
+
+logger = logging.getLogger(__name__)
+
+# Fallback species names used only when the dbt seed table (public.species_ref)
+# is missing. If you see warnings about this, run: dbt seed --project-dir /app/dbt
+_FALLBACK_SPECIES_NAMES: dict[int, str] = {
+    110: "shortleaf pine",
+    121: "longleaf pine",
+    129: "eastern white pine",
+    131: "loblolly pine",
+    132: "Virginia pine",
+    261: "eastern hemlock",
+    316: "red maple",
+    318: "sugar maple",
+    531: "American beech",
+    541: "white ash",
+    621: "sweetgum",
+    693: "black cherry",
+    746: "quaking aspen",
+    802: "white oak",
+    833: "northern red oak",
+    837: "scarlet oak",
+    951: "American elm",
+}
 
 
 async def get_carbon_summary(db: AsyncSession, statecd: int) -> CarbonSummary:
@@ -54,6 +80,7 @@ async def get_carbon_summary(db: AsyncSession, statecd: int) -> CarbonSummary:
             species_count=0,
             most_recent_inventory=0,
             loblolly_pine_pct=0.0,
+            data_available=False,
         )
     return CarbonSummary(
         statecd=row.statecd,
@@ -192,28 +219,16 @@ async def get_plots_geojson(
 
 
 async def _get_species_names(db: AsyncSession) -> dict[int, str]:
-    """Load species code → common name mapping."""
+    """Load species code → common name mapping from dbt seed table."""
     try:
-        result = await db.execute(text("SELECT spcd, common_name FROM staging.stg_species_ref"))
-        return {r.spcd: r.common_name for r in result.all()}
+        result = await db.execute(text("SELECT spcd, common_name FROM public.species_ref"))
+        names = {r.spcd: r.common_name for r in result.all()}
+        if names:
+            return names
+        logger.warning("species_ref table exists but is empty — run: dbt seed")
     except Exception:
-        # Seed table may not exist yet — return common SE US species
-        return {
-            110: "shortleaf pine",
-            121: "longleaf pine",
-            129: "eastern white pine",
-            131: "loblolly pine",
-            132: "Virginia pine",
-            261: "eastern hemlock",
-            316: "red maple",
-            318: "sugar maple",
-            531: "American beech",
-            541: "white ash",
-            621: "sweetgum",
-            693: "black cherry",
-            746: "quaking aspen",
-            802: "white oak",
-            833: "northern red oak",
-            837: "scarlet oak",
-            951: "American elm",
-        }
+        logger.warning(
+            "species_ref table not found — using fallback species names. "
+            "Run: dbt seed --project-dir /app/dbt"
+        )
+    return _FALLBACK_SPECIES_NAMES

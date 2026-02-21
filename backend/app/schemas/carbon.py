@@ -46,6 +46,10 @@ class CarbonSummary(BaseModel):
     loblolly_pine_pct: float = Field(
         description="Percentage of trees that are loblolly pine (SPCD 131)"
     )
+    data_available: bool = Field(
+        default=True,
+        description="False when no FIA data exists for this state",
+    )
 
 
 # ── GeoJSON ─────────────────────────────────────────────────────────────────
@@ -105,6 +109,29 @@ class QARunSummary(BaseModel):
     errors: int
     warnings: int
     checks: list[QACheckResult]
+
+
+# ── Data Health ─────────────────────────────────────────────────────────────
+
+
+class TableHealth(BaseModel):
+    """Health status of a single database table."""
+
+    table_name: str
+    row_count: int
+    status: str = Field(description="populated, empty, or missing")
+    required: bool = True
+
+
+class DataHealthReport(BaseModel):
+    """Overall data pipeline health report."""
+
+    overall_status: str = Field(description="healthy, degraded, or empty")
+    tables: list[TableHealth]
+    dbt_seed_loaded: bool
+    dbt_models_built: bool
+    states_with_data: list[int]
+    checked_at: datetime
 
 
 # ── Ingestion ───────────────────────────────────────────────────────────────

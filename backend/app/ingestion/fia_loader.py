@@ -153,9 +153,7 @@ def download_fia_csv(state_abbr: str, table_name: str) -> Path:
     url = f"{base_url}/{state_abbr}_{table_name}.csv"
     logger.info(f"Downloading {url}")
 
-    with httpx.Client(
-        timeout=httpx.Timeout(30, read=300), follow_redirects=True
-    ) as client:
+    with httpx.Client(timeout=httpx.Timeout(30, read=300), follow_redirects=True) as client:
         head = client.head(url)
 
         if head.status_code == 404:
@@ -219,9 +217,7 @@ def clean_tree_df(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def delete_state_data(
-    engine: Engine, table_name: str, statecd: int, schema: str = "raw"
-) -> None:
+def delete_state_data(engine: Engine, table_name: str, statecd: int, schema: str = "raw") -> None:
     """Delete all rows for a state from a raw table. Called once before chunked loading."""
     with engine.begin() as conn:
         conn.execute(
@@ -231,9 +227,7 @@ def delete_state_data(
     logger.info(f"Deleted existing data for statecd={statecd} from {schema}.{table_name}")
 
 
-def update_plot_geometry(
-    engine: Engine, table_name: str = "fia_plot", schema: str = "raw"
-) -> None:
+def update_plot_geometry(engine: Engine, table_name: str = "fia_plot", schema: str = "raw") -> None:
     """Build PostGIS geometry from lat/lon. Called once after all plot chunks are loaded.
 
     Note: FIA coordinates are fuzzed ~0.5-1 mile by USFS for privacy —

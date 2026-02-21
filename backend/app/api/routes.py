@@ -1,8 +1,9 @@
 """API routes for forest carbon data, spatial queries, and QA/QC."""
 
 import logging
+from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,9 +11,11 @@ from app.core.database import get_db
 from app.schemas.carbon import (
     CarbonBySpecies,
     CarbonSummary,
+    DataHealthReport,
     IngestionStatus,
     PlotFeatureCollection,
     QARunSummary,
+    TableHealth,
 )
 from app.services import carbon, qa_engine
 
@@ -76,6 +79,13 @@ async def county_boundaries(
 
     Uses Census TIGER/Line polygons loaded by the tiger_loader ingestion pipeline.
     """
+    total = await db.execute(text("SELECT COUNT(*) FROM raw.county_boundaries"))
+    if total.scalar() == 0:
+        raise HTTPException(
+            status_code=404,
+            detail="County boundary data not loaded. Run tiger_loader to ingest TIGER data.",
+        )
+
     result = await db.execute(
         text("""
             SELECT
@@ -124,6 +134,13 @@ async def climate_data(
     Enables correlation analysis between temperature/precipitation patterns
     and forest carbon density.
     """
+    total = await db.execute(text("SELECT COUNT(*) FROM raw.prism_normals"))
+    if total.scalar() == 0:
+        raise HTTPException(
+            status_code=404,
+            detail="PRISM climate data not loaded. Run prism_loader to ingest climate normals.",
+        )
+
     result = await db.execute(
         text("""
             SELECT
@@ -170,6 +187,96 @@ async def run_qa_checks(
     Optionally filter by state FIPS code (e.g., NC=37, SC=45).
     """
     return await qa_engine.run_all_checks(db, statecd=statecd)
+
+
+# ── Data Health ────────────────────────────────────────────────────────────
+
+
+_HEALTH_TABLES = [
+    ("raw", "fia_plot", True),
+    ("raw", "fia_tree", True),
+    ("raw", "fia_cond", True),
+    ("public", "species_ref", True),
+    ("raw", "county_boundaries", False),
+    ("raw", "prism_normals", False),
+]
+
+
+@router.get("/health/data", response_model=DataHealthReport)
+async def data_health(db: AsyncSession = Depends(get_db)) -> DataHealthReport:
+    """Report data pipeline health: table row counts, dbt status, loaded states."""
+    tables: list[TableHealth] = []
+
+    for schema, table, required in _HEALTH_TABLES:
+        try:
+            result = await db.execute(
+                text(f"SELECT COUNT(*) FROM {schema}.{table}")  # noqa: S608
+            )
+            count = result.scalar() or 0
+            tables.append(
+                TableHealth(
+                    table_name=f"{schema}.{table}",
+                    row_count=count,
+                    status="populated" if count > 0 else "empty",
+                    required=required,
+                )
+            )
+        except Exception:
+            await db.rollback()
+            tables.append(
+                TableHealth(
+                    table_name=f"{schema}.{table}",
+                    row_count=0,
+                    status="missing",
+                    required=required,
+                )
+            )
+
+    # Check if dbt staging views exist (use information_schema to avoid
+    # aborting the transaction if the view doesn't exist)
+    result = await db.execute(
+        text("""
+            SELECT EXISTS (
+                SELECT 1 FROM information_schema.tables
+                WHERE table_schema = 'staging' AND table_name = 'stg_fia_plots'
+            )
+        """)
+    )
+    dbt_models_built = result.scalar() or False
+
+    dbt_seed_loaded = any(
+        t.table_name == "public.species_ref" and t.status == "populated" for t in tables
+    )
+
+    # Which states have data
+    try:
+        result = await db.execute(
+            text("SELECT DISTINCT statecd FROM raw.fia_plot ORDER BY statecd")
+        )
+        states_with_data = [r[0] for r in result.all()]
+    except Exception:
+        await db.rollback()
+        states_with_data = []
+
+    # Determine overall status
+    required_populated = all(t.status == "populated" for t in tables if t.required)
+    any_data = any(t.status == "populated" for t in tables)
+
+    if required_populated and dbt_seed_loaded:
+        overall = "healthy"
+    elif any_data:
+        overall = "degraded"
+    else:
+        overall = "empty"
+
+    return DataHealthReport(
+        overall_status=overall,
+        tables=tables,
+        dbt_seed_loaded=dbt_seed_loaded,
+        dbt_models_built=dbt_models_built,
+        states_with_data=states_with_data,
+        checked_at=datetime.now(UTC),
+    )
 
 
 # ── Ingestion (async trigger) ──────────────────────────────────────────────

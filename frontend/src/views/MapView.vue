@@ -14,8 +14,8 @@ let L, map, clusterGroup, heatLayer
 
 // ── Carbon color scale ──────────────────────────────────────────────────
 const TIERS = [
-  { min: 50, color: '#16a34a', label: '≥ 50 t/acre' },
-  { min: 30, color: '#22c55e', label: '30 – 50' },
+  { min: 50, color: '#166534', label: '≥ 50 t/acre' },
+  { min: 30, color: '#4ade80', label: '30 – 50' },
   { min: 15, color: '#eab308', label: '15 – 30' },
   { min: 5, color: '#f97316', label: '5 – 15' },
   { min: 0, color: '#ef4444', label: '< 5' },
