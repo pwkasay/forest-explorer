@@ -1,6 +1,6 @@
 # 🍄 Forest Carbon Data Explorer
 
-**A full-stack data engineering demo mirroring [Funga PBC's](https://funga.earth) tech stack: ingesting USFS Forest Inventory & Analysis data through automated QA/QC pipelines, transforming it with dbt, and serving it via a Vue dashboard with interactive geospatial carbon visualizations.**
+**A full-stack data engineering demo ingesting USFS Forest Inventory & Analysis data through automated QA/QC pipelines, transforming it with dbt, and serving it via a Vue dashboard with interactive geospatial carbon visualizations.**
 
 Built as a portfolio project demonstrating data engineering skills for climate tech — specifically the Data Engineer role at Funga, where the job is to own the "last mile" of a data stack that bridges genomic sequencing, geospatial analysis, and carbon accounting.
 
