@@ -23,13 +23,13 @@ ingest-climate: ## Ingest PRISM climate normals (default: STATE=NC)
 	docker compose exec backend python -m app.ingestion.prism_loader --state $(STATE)
 
 dbt: ## Run dbt models
-	docker compose exec backend dbt run --project-dir /app/dbt
+	docker compose exec backend dbt run --project-dir /app/dbt --profiles-dir /app/dbt
 
 dbt-test: ## Run dbt tests
-	docker compose exec backend dbt test --project-dir /app/dbt
+	docker compose exec backend dbt test --project-dir /app/dbt --profiles-dir /app/dbt
 
 dbt-seed: ## Load seed data (species_ref.csv)
-	docker compose exec backend dbt seed --project-dir /app/dbt
+	docker compose exec backend dbt seed --project-dir /app/dbt --profiles-dir /app/dbt
 
 test: ## Run backend tests
 	cd backend && pytest

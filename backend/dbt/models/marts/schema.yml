@@ -11,7 +11,8 @@ models:
       - name: avg_carbon_per_acre_tons
         tests:
           - dbt_utils.expression_is_true:
-              expression: ">= 0"
+              arguments:
+                expression: ">= 0"
 
   - name: mart_plot_carbon_density
     description: >
@@ -23,4 +24,5 @@ models:
       - name: carbon_density_class
         tests:
           - accepted_values:
-              values: ['very_high', 'high', 'medium', 'low', 'very_low']
+              arguments:
+                values: ['very_high', 'high', 'medium', 'low', 'very_low']

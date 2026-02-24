@@ -33,3 +33,5 @@ pgdata/
 
 CLAUDE.md
 .claude
+instructions.md
+.ruff_cache/

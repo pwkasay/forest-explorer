@@ -32,8 +32,8 @@ class FIAPlot(Base):
         DateTime(timezone=True), server_default=func.now()
     )
 
-    conditions: Mapped[list[FIACond]] = relationship(back_populates="plot_ref")
-    trees: Mapped[list[FIATree]] = relationship(back_populates="plot_ref")
+    conditions: Mapped[list["FIACond"]] = relationship(back_populates="plot_ref")
+    trees: Mapped[list["FIATree"]] = relationship(back_populates="plot_ref")
 
 
 class FIACond(Base):

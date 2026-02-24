@@ -11,7 +11,7 @@ Built as a portfolio project demonstrating data engineering skills for climate t
 │  Vue 3 Frontend (Vite + Leaflet + Chart.js)             │
 │  Interactive map, carbon dashboards, QA/QC reports      │
 ├─────────────────────────────────────────────────────────┤
-│  FastAPI Backend (Python 3.14)                          │
+│  FastAPI Backend (Python 3.13)                          │
 │  REST API, data ingestion, validation pipelines         │
 ├─────────────────────────────────────────────────────────┤
 │  dbt Transformation Layer                               │
@@ -32,16 +32,16 @@ Built as a portfolio project demonstrating data engineering skills for climate t
 | Automated QA/QC pipelines | Validation framework catching data inconsistencies pre-delivery |
 | Containerized connectors pulling from APIs | Dockerized FIA API ingestion pipeline |
 | Cloud-native deployment (Docker, AWS/GCP) | Docker Compose stack, production-ready Dockerfile |
-| Clean Python for data manipulation | Type-hinted, async Python 3.14 throughout |
+| Clean Python for data manipulation | Type-hinted, async Python 3.13 throughout |
 | Treat internal teams as customers | Dashboard designed for non-technical Growth/Land team users |
 
 ## Tech Stack
 
-**Backend:** Python 3.14, FastAPI, SQLAlchemy + GeoAlchemy2, asyncpg  
+**Backend:** Python 3.13, FastAPI, SQLAlchemy + GeoAlchemy2, asyncpg
 **Data:** dbt-core + dbt-postgres, FIA API ingestion  
 **Frontend:** Vue 3 (Composition API), Vite, Leaflet, Chart.js  
-**Infrastructure:** PostgreSQL 16 + PostGIS 3.4, Docker Compose, Nginx  
-**Geospatial:** PostGIS, Shapely, GeoPandas, pyproj  
+**Infrastructure:** PostgreSQL 16 + PostGIS 3.4, Docker Compose
+**Geospatial:** PostGIS, Shapely, GeoPandas, pyproj
 
 ## Quick Start
 
@@ -50,24 +50,52 @@ Built as a portfolio project demonstrating data engineering skills for climate t
 git clone https://github.com/pwkasay/forest-explorer.git
 cd forest-explorer
 cp .env.example .env
-
-# Start the stack
 docker compose up -d
 
-# Ingest FIA data for a sample state (North Carolina)
+# Ingest FIA data for North Carolina (~3 min, downloads ~150MB from USFS)
 docker compose exec backend python -m app.ingestion.fia_loader --state NC
 
-# Run dbt transformations
-docker compose exec backend dbt run --project-dir /app/dbt
+# Load species reference and build dbt models
+docker compose exec backend dbt seed --project-dir /app/dbt --profiles-dir /app/dbt
+docker compose exec backend dbt run  --project-dir /app/dbt --profiles-dir /app/dbt
+docker compose exec backend dbt test --project-dir /app/dbt --profiles-dir /app/dbt
 
 # Open the dashboard
-open http://localhost:3000
+open http://localhost:3001          # Dashboard
+# API docs at http://localhost:8002/docs
 ```
+
+Or use the **Makefile** shortcuts:
+
+```bash
+make setup                          # docker compose up -d
+make ingest                         # Ingest NC data (STATE=NC by default)
+make ingest STATE=SC                # Ingest a different state
+make dbt-seed                       # Load species reference CSV
+make dbt                            # Build staging views + mart tables
+make dbt-test                       # Run 28 data quality tests
+make test                           # Run backend unit tests (23 tests)
+make lint                           # Ruff lint + format check
+```
+
+### Data ingestion options
+
+The ingestion pipeline supports all 50 US states. Each state downloads three CSV files (PLOT, TREE, COND) from the USFS FIA DataMart:
+
+```bash
+# Ingest a single state
+docker compose exec backend python -m app.ingestion.fia_loader --state GA
+
+# Ingest specific tables only (useful for debugging)
+docker compose exec backend python -m app.ingestion.fia_loader --state NC --tables PLOT,TREE
+```
+
+State codes are standard two-letter abbreviations (NC, SC, GA, VA, FL, etc.). FIPS codes used in the API: NC=37, SC=45, GA=13.
 
 ## Project Structure
 
 ```
-forest-carbon-explorer/
+forest-explorer/
 ├── backend/
 │   ├── app/
 │   │   ├── api/            # FastAPI route handlers
@@ -92,8 +120,7 @@ forest-carbon-explorer/
 │   └── public/
 ├── docker/                 # Dockerfiles
 ├── scripts/                # Dev utilities
-├── docker-compose.yml
-└── .claude/                # Claude Code instructions
+└── docker-compose.yml
 ```
 
 ## Development

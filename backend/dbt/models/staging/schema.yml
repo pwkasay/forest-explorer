@@ -43,7 +43,8 @@ models:
       - name: coord_quality
         tests:
           - accepted_values:
-              values: ['valid', 'missing_coords', 'out_of_bounds']
+              arguments:
+                values: ['valid', 'missing_coords', 'out_of_bounds']
 
   - name: stg_fia_trees
     description: "Normalized FIA tree data with metric conversions and per-acre carbon"
@@ -53,7 +54,8 @@ models:
       - name: carbon_ag_lbs
         tests:
           - dbt_utils.expression_is_true:
-              expression: ">= 0"
+              arguments:
+                expression: ">= 0"
               config:
                 severity: warn
 

@@ -33,7 +33,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: bash -c "dbt deps --project-dir /app/dbt 2>/dev/null; uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    command: bash -c "dbt deps --project-dir /app/dbt --profiles-dir /app/dbt 2>/dev/null; uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
   frontend:
     build:
