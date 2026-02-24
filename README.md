@@ -78,6 +78,18 @@ make test                           # Run backend unit tests (23 tests)
 make lint                           # Ruff lint + format check
 ```
 
+### Optional: County Boundaries & Climate Data
+
+The core dashboard works with just FIA data, but two additional ingestion pipelines unlock county-level and climate endpoints:
+
+```bash
+make ingest-counties               # Census TIGER county polygons (~30s)
+make ingest-climate                # PRISM 30-year climate normals (~3 min)
+make dbt                           # Rebuild models with new data
+```
+
+These are **optional** — skip them to get up and running faster, or run them later to enable the `/counties/` and `/climate/` API endpoints.
+
 ### Data ingestion options
 
 The ingestion pipeline supports all 50 US states. Each state downloads three CSV files (PLOT, TREE, COND) from the USFS FIA DataMart:
@@ -96,6 +108,7 @@ State codes are standard two-letter abbreviations (NC, SC, GA, VA, FL, etc.). FI
 
 ```
 forest-explorer/
+├── .github/workflows/      # CI pipeline (lint + test on PRs)
 ├── backend/
 │   ├── app/
 │   │   ├── api/            # FastAPI route handlers
@@ -103,7 +116,7 @@ forest-explorer/
 │   │   ├── models/         # SQLAlchemy + GeoAlchemy2 ORM models
 │   │   ├── schemas/        # Pydantic request/response schemas
 │   │   ├── services/       # Business logic, QA/QC engine
-│   │   └── ingestion/      # FIA API data loaders
+│   │   └── ingestion/      # FIA, TIGER, and PRISM data loaders
 │   ├── dbt/
 │   │   ├── models/
 │   │   │   ├── staging/    # 1:1 with raw tables, light cleaning
@@ -119,9 +132,32 @@ forest-explorer/
 │   │   └── stores/         # Pinia state management
 │   └── public/
 ├── docker/                 # Dockerfiles
-├── scripts/                # Dev utilities
+├── scripts/                # Audit & dev utilities
 └── docker-compose.yml
 ```
+
+## API Endpoints
+
+All endpoints are under `/api/v1`. Interactive docs at `http://localhost:8002/docs`.
+
+| Method | Path | Description | Requires |
+|--------|------|-------------|----------|
+| GET | `/carbon/summary/{statecd}` | Aggregate carbon stats | FIA data |
+| GET | `/carbon/species/{statecd}` | Top species by carbon density | FIA data |
+| GET | `/plots/{statecd}/geojson` | Plot locations as GeoJSON | FIA data |
+| GET | `/counties/{statecd}/geojson` | County boundary polygons | TIGER data (optional) |
+| GET | `/climate/{statecd}` | Plot-level climate metrics | PRISM data (optional) |
+| POST | `/qa/run` | Run QA/QC validation checks | FIA data |
+| GET | `/health/data` | Pipeline health status | — |
+| POST | `/ingest/{state_abbr}` | Trigger FIA ingestion | — |
+
+State codes in paths are FIPS codes: NC=37, SC=45, GA=13.
+
+## Dashboard Pages
+
+- **Dashboard** (`/`) — KPI cards + species carbon chart
+- **Map** (`/map`) — Leaflet map with plot clusters, carbon filters, species filter
+- **QA/QC** (`/qa`) — Data validation results with severity badges
 
 ## Development
 
@@ -142,10 +178,22 @@ cd backend/dbt
 dbt run && dbt test
 ```
 
+## CI & Verification
+
+GitHub Actions runs linting (`ruff`) and tests (`pytest`, `npm run build`) on every push and PR to `main`.
+
+To verify the full pipeline locally after ingestion:
+
+```bash
+python scripts/audit_endpoints.py              # Hits every API endpoint, reports PASS/WARN/FAIL
+python scripts/audit_endpoints.py --state 45   # Audit a specific state (FIPS code)
+```
+
 ## Data Sources
 
 - **USFS FIA Database API** — Tree-level measurements, carbon estimates, plot locations
-- **EVALIDator API** — Aggregate forest statistics by state/county
+- **Census TIGER/Line** — County boundary polygons (optional, enables `/counties/` endpoint)
+- **PRISM Climate Normals** — 30-year temperature/precipitation normals at 4km resolution (optional, enables `/climate/` endpoint)
 - **FIA Species Reference** — Tree species codes and common names (dbt seed)
 
 ## Key Concepts
